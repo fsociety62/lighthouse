@@ -140,7 +140,7 @@ describe('i18n', () => {
       expect(i18n.lookupLocale('en-xa')).toEqual('en-XA');
     });
 
-    it('canonicalizes the locales', () => {
+    it('canonicalizes multiple locales', () => {
       expect(i18n.lookupLocale([invalidLocale, 'en-xa'])).toEqual('en-XA');
     });
 
