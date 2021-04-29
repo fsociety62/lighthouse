@@ -18,7 +18,7 @@ declare global {
     }
 
     interface ViewMode {
-      id: 'all' | 'unused-bytes';
+      id: 'all' | 'unused-bytes' | 'duplicate-modules';
       label: string;
       subLabel: string;
       partitionBy?: 'resourceBytes' | 'unusedBytes';
