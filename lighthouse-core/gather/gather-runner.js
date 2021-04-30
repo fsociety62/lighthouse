@@ -8,7 +8,7 @@
 const log = require('lighthouse-logger');
 const LHError = require('../lib/lh-error.js');
 const NetworkAnalyzer = require('../lib/dependency-graph/simulator/network-analyzer.js');
-const NetworkRecorder = require('../lib/network-recorder.js');
+const NetworkRecords = require('../computed/network-records.js');
 const emulation = require('../lib/emulation.js');
 const constants = require('../config/constants.js');
 const i18n = require('../lib/i18n/i18n.js');
@@ -54,6 +54,7 @@ const SLOW_CPU_BENCHMARK_INDEX_THRESHOLD = 1000;
 const str_ = i18n.createMessageInstanceIdFn(__filename, UIStrings);
 
 /** @typedef {import('../gather/driver.js')} Driver */
+/** @typedef {import('../lib/arbitrary-equality-map.js')} ArbitraryEqualityMap */
 
 /**
  * Each entry in each gatherer result array is the output of a gatherer phase:
@@ -477,7 +478,12 @@ class GatherRunner {
     };
     log.time(status);
     const devtoolsLog = driver.endDevtoolsLog();
-    const networkRecords = NetworkRecorder.recordsFromLogs(devtoolsLog);
+    const context = {
+      computedCache: passContext.computedCache,
+      settings: passContext.settings,
+      options: {},
+    };
+    const networkRecords = await NetworkRecords.request(devtoolsLog, context);
     log.timeEnd(status);
 
     return {
@@ -707,7 +713,7 @@ class GatherRunner {
 
   /**
    * @param {Array<LH.Config.Pass>} passConfigs
-   * @param {{driver: Driver, requestedUrl: string, settings: LH.Config.Settings}} options
+   * @param {{driver: Driver, requestedUrl: string, settings: LH.Config.Settings, computedCache: Map<string, ArbitraryEqualityMap>}} options
    * @return {Promise<LH.Artifacts>}
    */
   static async run(passConfigs, options) {
@@ -737,6 +743,7 @@ class GatherRunner {
           settings: options.settings,
           passConfig,
           baseArtifacts,
+          computedCache: options.computedCache,
           LighthouseRunWarnings: baseArtifacts.LighthouseRunWarnings,
         };
         const passResults = await GatherRunner.runPass(passContext);

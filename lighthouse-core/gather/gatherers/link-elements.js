@@ -6,10 +6,12 @@
 'use strict';
 
 const LinkHeader = require('http-link-header');
-const Gatherer = require('./gatherer.js');
+const FRGatherer = require('../../fraggle-rock/gather/base-gatherer.js');
 const {URL} = require('../../lib/url-shim.js');
+const NetworkRecords = require('../../computed/network-records.js');
 const NetworkAnalyzer = require('../../lib/dependency-graph/simulator/network-analyzer.js');
 const pageFunctions = require('../../lib/page-functions.js');
+const DevtoolsLog = require('./devtools-log.js');
 
 /* globals HTMLLinkElement getNodeDetails */
 
@@ -79,9 +81,15 @@ function getLinkElementsInDOM() {
 }
 /* c8 ignore stop */
 
-class LinkElements extends Gatherer {
+class LinkElements extends FRGatherer {
+  /** @type {LH.Gatherer.GathererMeta<'DevtoolsLog'>} */
+  meta = {
+    supportedModes: ['timespan', 'navigation'],
+    dependencies: {DevtoolsLog: DevtoolsLog.symbol},
+  }
+
   /**
-   * @param {LH.Gatherer.PassContext} passContext
+   * @param {LH.Gatherer.CompatibilityContext} passContext
    * @return {Promise<LH.Artifacts['LinkElements']>}
    */
   static getLinkElementsInDOM(passContext) {
@@ -98,14 +106,13 @@ class LinkElements extends Gatherer {
   }
 
   /**
-   * @param {LH.Gatherer.PassContext} passContext
-   * @param {LH.Gatherer.LoadData} loadData
-   * @return {LH.Artifacts['LinkElements']}
+   * @param {LH.Gatherer.CompatibilityContext} passContext
+   * @param {LH.Artifacts.NetworkRequest[]} networkRecords
+   * @return {Promise<LH.Artifacts['LinkElements']>}
    */
-  static getLinkElementsInHeaders(passContext, loadData) {
+  static async getLinkElementsInHeaders(passContext, networkRecords) {
     const finalUrl = passContext.url;
-    const records = loadData.networkRecords;
-    const mainDocument = NetworkAnalyzer.findMainDocument(records, finalUrl);
+    const mainDocument = NetworkAnalyzer.findMainDocument(networkRecords, finalUrl);
 
     /** @type {LH.Artifacts['LinkElements']} */
     const linkElements = [];
@@ -131,13 +138,13 @@ class LinkElements extends Gatherer {
   }
 
   /**
-   * @param {LH.Gatherer.PassContext} passContext
-   * @param {LH.Gatherer.LoadData} loadData
+   * @param {LH.Gatherer.CompatibilityContext} passContext
+   * @param {LH.Artifacts.NetworkRequest[]} networkRecords
    * @return {Promise<LH.Artifacts['LinkElements']>}
    */
-  async afterPass(passContext, loadData) {
+  async _getArtifact(passContext, networkRecords) {
     const fromDOM = await LinkElements.getLinkElementsInDOM(passContext);
-    const fromHeaders = LinkElements.getLinkElementsInHeaders(passContext, loadData);
+    const fromHeaders = await LinkElements.getLinkElementsInHeaders(passContext, networkRecords);
     const linkElements = fromDOM.concat(fromHeaders);
 
     for (const link of linkElements) {
@@ -146,6 +153,29 @@ class LinkElements extends Gatherer {
     }
 
     return linkElements;
+  }
+
+  /**
+   * @param {LH.Gatherer.PassContext} passContext
+   * @param {LH.Gatherer.LoadData} loadData
+   * @return {Promise<LH.Artifacts['LinkElements']>}
+   */
+  async afterPass(passContext, loadData) {
+    return await this._getArtifact(passContext, loadData.networkRecords);
+  }
+
+  /**
+   * @param {LH.Gatherer.FRTransitionalContext<'DevtoolsLog'>} passContext
+   * @return {Promise<LH.Artifacts['LinkElements']>}
+   */
+  async getArtifact(passContext) {
+    const context = {
+      computedCache: passContext.computedCache,
+      settings: passContext.settings,
+      options: {},
+    };
+    const records = await NetworkRecords.request(passContext.dependencies.DevtoolsLog, context);
+    return await this._getArtifact(passContext, records);
   }
 }
 
