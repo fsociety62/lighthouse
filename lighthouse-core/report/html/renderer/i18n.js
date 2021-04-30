@@ -52,6 +52,17 @@ class I18n {
 
   /**
    * @param {number} size
+   * @param {number=} granularity Controls how coarse the displayed value is, defaults to 0.1
+   * @return {string}
+   */
+  formatBytesToMiB(size, granularity = 0.1) {
+    const formatter = this._byteFormatterForGranularity(granularity);
+    const kbs = formatter.format(Math.round(size / 1024 ** 2 / granularity) * granularity);
+    return `${kbs}${NBSP2}MiB`;
+  }
+
+  /**
+   * @param {number} size
    * @param {number=} granularity Controls how coarse the displayed value is, defaults to 1
    * @return {string}
    */

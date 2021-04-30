@@ -7,6 +7,8 @@
 
 /* eslint-env browser */
 
+/* globals Util */
+
 /** @typedef {HTMLElementTagNameMap & {[id: string]: HTMLElement}} HTMLElementByTagName */
 /** @template {string} T @typedef {import('typed-query-selector/parser').ParseSelector<T, Element>} ParseSelector */
 
@@ -126,9 +128,9 @@ class TreemapUtil {
    * @param {number} bytes
    */
   static formatBytes(bytes) {
-    if (bytes >= MiB) return (bytes / MiB).toFixed(2) + '\xa0MiB';
-    if (bytes >= KiB) return (bytes / KiB).toFixed(0) + '\xa0KiB';
-    return bytes + '\xa0B';
+    if (bytes >= MiB) return Util.i18n.formatBytesToMiB(bytes);
+    if (bytes >= KiB) return Util.i18n.formatBytesToKiB(bytes);
+    return Util.i18n.formatNumber(bytes) + '\xa0B';
   }
 
   /**
@@ -137,8 +139,8 @@ class TreemapUtil {
    */
   static format(value, unit) {
     if (unit === 'bytes') return TreemapUtil.formatBytes(value);
-    if (unit === 'time') return `${value}\xa0ms`;
-    return `${value} ${unit}`;
+    if (unit === 'time') return `${Util.i18n.formatNumber(value)}\xa0ms`;
+    return `${Util.i18n.formatNumber(value)}\xa0${unit}`;
   }
 
   /**

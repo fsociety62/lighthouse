@@ -617,6 +617,23 @@ Util.UIStrings = {
 
   /** Descriptive explanation for environment throttling that was provided by the runtime environment instead of provided by Lighthouse throttling. */
   throttlingProvided: 'Provided by environment',
+
+  /** Label for a button that alternates between showing or hiding a table. */
+  treemapToggleTable: 'Toggle Table',
+  treemapAllScripts: 'All Scripts',
+  treemapName: 'Name',
+  treemapResourceBytes: 'Resource Bytes',
+  treemapUnusedBytes: 'Unused Bytes',
+  treemapSize: 'Size',
+  treemapUnused: 'Unused',
+  treemapCoverage: 'Coverage',
+  treemapAll: 'Coverage',
+  treemapDuplicateModules: 'Duplicate Modules',
+  /**
+   * @description Message shown in tooltip when user hovers over an element representing what percentage of bytes are unused in a specific file.
+   * @example {'42'} percent
+   */
+  // treemapBytesUnused: '{percent}% bytes unused',
 };
 
 if (typeof module !== 'undefined' && module.exports) {
