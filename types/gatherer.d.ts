@@ -63,6 +63,10 @@ declare global {
       baseArtifacts: BaseArtifacts;
     }
 
+    export type ComputedContext = Immutable<{
+      computedCache: Map<string, ArbitraryEqualityMap>;
+    }>;
+
     export type CompatibilityContext = PassContext | FRTransitionalContext;
 
     export interface LoadData {
