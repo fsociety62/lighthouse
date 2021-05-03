@@ -61,9 +61,8 @@ declare global {
       /** Gatherers can push to this array to add top-level warnings to the LHR. */
       LighthouseRunWarnings: Array<string | IcuMessage>;
       baseArtifacts: BaseArtifacts;
+      dependencies: {};
     }
-
-    export type CompatibilityContext = PassContext | FRTransitionalContext;
 
     export interface LoadData {
       networkRecords: Array<Artifacts.NetworkRequest>;

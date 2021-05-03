@@ -740,6 +740,7 @@ class GatherRunner {
           baseArtifacts,
           computedCache: options.computedCache,
           LighthouseRunWarnings: baseArtifacts.LighthouseRunWarnings,
+          dependencies: {},
         };
         const passResults = await GatherRunner.runPass(passContext);
         Object.assign(artifacts, passResults.artifacts);

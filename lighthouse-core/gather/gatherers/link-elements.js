@@ -89,7 +89,7 @@ class LinkElements extends FRGatherer {
   }
 
   /**
-   * @param {LH.Gatherer.CompatibilityContext} passContext
+   * @param {LH.Gatherer.FRTransitionalContext} passContext
    * @return {Promise<LH.Artifacts['LinkElements']>}
    */
   static getLinkElementsInDOM(passContext) {
@@ -106,7 +106,7 @@ class LinkElements extends FRGatherer {
   }
 
   /**
-   * @param {LH.Gatherer.CompatibilityContext} passContext
+   * @param {LH.Gatherer.FRTransitionalContext} passContext
    * @param {LH.Artifacts.NetworkRequest[]} networkRecords
    * @return {Promise<LH.Artifacts['LinkElements']>}
    */
@@ -138,7 +138,7 @@ class LinkElements extends FRGatherer {
   }
 
   /**
-   * @param {LH.Gatherer.CompatibilityContext} passContext
+   * @param {LH.Gatherer.FRTransitionalContext} passContext
    * @param {LH.Artifacts.NetworkRequest[]} networkRecords
    * @return {Promise<LH.Artifacts['LinkElements']>}
    */
@@ -156,7 +156,7 @@ class LinkElements extends FRGatherer {
   }
 
   /**
-   * @param {LH.Gatherer.PassContext} passContext
+   * @param {LH.Gatherer.FRTransitionalContext} passContext
    * @param {LH.Gatherer.LoadData} loadData
    * @return {Promise<LH.Artifacts['LinkElements']>}
    */
