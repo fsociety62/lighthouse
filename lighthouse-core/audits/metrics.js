@@ -44,7 +44,7 @@ class Metrics extends Audit {
     const trace = artifacts.traces[Audit.DEFAULT_PASS];
     const devtoolsLog = artifacts.devtoolsLogs[Audit.DEFAULT_PASS];
     const summary = await ComputedTimingSummary
-      .request({trace, devtoolsLog, settings: artifacts.settings}, context);
+      .request({trace, devtoolsLog}, context);
     const metrics = summary.metrics;
     const debugInfo = summary.debugInfo;
 
