@@ -478,12 +478,7 @@ class GatherRunner {
     };
     log.time(status);
     const devtoolsLog = driver.endDevtoolsLog();
-    const context = {
-      computedCache: passContext.computedCache,
-      settings: passContext.settings,
-      options: {},
-    };
-    const networkRecords = await NetworkRecords.request(devtoolsLog, context);
+    const networkRecords = await NetworkRecords.request(devtoolsLog, passContext);
     log.timeEnd(status);
 
     return {

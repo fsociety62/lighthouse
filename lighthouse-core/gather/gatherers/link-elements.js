@@ -169,12 +169,7 @@ class LinkElements extends FRGatherer {
    * @return {Promise<LH.Artifacts['LinkElements']>}
    */
   async getArtifact(passContext) {
-    const context = {
-      computedCache: passContext.computedCache,
-      settings: passContext.settings,
-      options: {},
-    };
-    const records = await NetworkRecords.request(passContext.dependencies.DevtoolsLog, context);
+    const records = await NetworkRecords.request(passContext.dependencies.DevtoolsLog, passContext);
     return await this._getArtifact(passContext, records);
   }
 }

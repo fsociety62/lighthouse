@@ -42,8 +42,8 @@ declare global {
       gatherMode: GatherMode;
       /** The connection to the page being analyzed. */
       driver: FRTransitionalDriver;
+      /** The cached results of computed artifacts. */
       computedCache: Map<string, ArbitraryEqualityMap>;
-      settings: Config.Settings;
       /** The set of available dependencies requested by the current gatherer. */
       dependencies: TDependencies extends DefaultDependenciesKey ?
         {} :
