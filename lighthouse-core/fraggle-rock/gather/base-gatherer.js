@@ -90,8 +90,9 @@ class FRGatherer {
    * @return {Promise<LH.Gatherer.PhaseResultNonPromise>}
    */
   async afterPass(passContext, loadData) {
-    // @ts-ignore Default meta type does not include dependencies.
-    if (this.meta.dependencies) throw Error('Legacy gatherer should not have dependencies.');
+    if ('dependencies' in this.meta) {
+      throw Error('Gatherer with dependencies should override afterPass');
+    }
     await this.stopSensitiveInstrumentation({...passContext, dependencies: {}});
     await this.stopInstrumentation({...passContext, dependencies: {}});
     return this.getArtifact({...passContext, dependencies: {}});
