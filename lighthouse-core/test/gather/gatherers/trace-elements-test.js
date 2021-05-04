@@ -751,26 +751,19 @@ describe('Trace Elements gatherer - Animated Elements', () => {
 });
 
 describe('FR compat', () => {
-  /** @type {TraceElementsGatherer} */
-  let gatherer;
-
-  beforeEach(() => {
-    gatherer = new TraceElementsGatherer();
-    gatherer._getArtifact = jest.fn();
-    gatherer.stopInstrumentation = jest.fn();
-  });
-
   it('uses loadData in legacy mode', async () => {
     const trace = ['1', '2'];
+    const gatherer = new TraceElementsGatherer();
+    gatherer._getArtifact = jest.fn();
     await gatherer.afterPass({}, {trace});
     expect(gatherer._getArtifact).toHaveBeenCalledWith({dependencies: {}}, trace);
   });
 
   it('uses dependency in legacy mode', async () => {
     const trace = ['1', '2'];
-    const context = {
-      dependencies: {Trace: trace},
-    };
+    const gatherer = new TraceElementsGatherer();
+    gatherer._getArtifact = jest.fn();
+    const context = {dependencies: {Trace: trace}};
     await gatherer.getArtifact(context);
     expect(gatherer._getArtifact).toHaveBeenCalledWith(context, trace);
   });
