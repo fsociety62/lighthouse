@@ -74,6 +74,14 @@ function makeLCPTraceEvent(nodeId) {
   };
 }
 
+it('startInstrumentation', async () => {
+  const sendCommand = jest.fn();
+  await new TraceElementsGatherer().startInstrumentation({
+    driver: {defaultSession: {sendCommand}},
+  });
+  expect(sendCommand).toHaveBeenCalledWith('Animation.enable');
+});
+
 describe('Trace Elements gatherer - GetTopLayoutShiftElements', () => {
   /**
    * @param {Array<{nodeId: number, score: number}>} shiftScores
@@ -739,5 +747,33 @@ describe('Trace Elements gatherer - Animated Elements', () => {
         nodeId: 6,
       },
     ]);
+  });
+});
+
+describe('FR compat', () => {
+  /** @type {TraceElementsGatherer} */
+  let gatherer;
+
+  beforeEach(() => {
+    gatherer = new TraceElementsGatherer();
+    gatherer._getArtifact = jest.fn();
+    gatherer.stopInstrumentation = jest.fn();
+  });
+
+  it('uses loadData in legacy mode', async () => {
+    const trace = ['1', '2'];
+    await gatherer.afterPass({}, {trace});
+    expect(gatherer._getArtifact).toHaveBeenCalledWith({dependencies: {}}, trace);
+    expect(gatherer.stopInstrumentation).toHaveBeenCalledWith({dependencies: {}});
+  });
+
+  it('uses dependency in legacy mode', async () => {
+    const trace = ['1', '2'];
+    const context = {
+      dependencies: {Trace: trace},
+    };
+    await gatherer.getArtifact(context);
+    expect(gatherer._getArtifact).toHaveBeenCalledWith(context, trace);
+    expect(gatherer.stopInstrumentation).not.toHaveBeenCalled();
   });
 });

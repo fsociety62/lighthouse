@@ -13,12 +13,13 @@
  * We take the backend nodeId from the trace and use it to find the corresponding element in the DOM.
  */
 
-const Gatherer = require('./gatherer.js');
-const dom = require('../driver/dom.js');
+const FRGatherer = require('../../fraggle-rock/gather/base-gatherer.js');
+const {resolveNodeIdToObjectId} = require('../driver/dom.js');
 const pageFunctions = require('../../lib/page-functions.js');
 const TraceProcessor = require('../../lib/tracehouse/trace-processor.js');
 const RectHelpers = require('../../lib/rect-helpers.js');
 const Sentry = require('../../lib/sentry.js');
+const Trace = require('./trace.js');
 
 /** @typedef {{nodeId: number, score?: number, animations?: {name?: string, failureReasonsMask?: number, unsupportedProperties?: string[]}[]}} TraceElementData */
 
@@ -37,7 +38,13 @@ function getNodeDetailsData() {
 }
 /* c8 ignore stop */
 
-class TraceElements extends Gatherer {
+class TraceElements extends FRGatherer {
+  /** @type {LH.Gatherer.GathererMeta<'Trace'>} */
+  meta = {
+    supportedModes: ['timespan', 'navigation'],
+    dependencies: {Trace: Trace.symbol},
+  }
+
   /**
    * @param {LH.TraceEvent | undefined} event
    * @return {number | undefined}
@@ -89,17 +96,17 @@ class TraceElements extends Gatherer {
   }
 
   /**
-   * @param {LH.Gatherer.PassContext} passContext
+   * @param {LH.Gatherer.FRTransitionalContext} passContext
    * @param {string} animationId
    * @return {Promise<string | undefined>}
    */
   static async resolveAnimationName(passContext, animationId) {
-    const driver = passContext.driver;
+    const session = passContext.driver.defaultSession;
     try {
-      const result = await driver.sendCommand('Animation.resolveAnimation', {animationId});
+      const result = await session.sendCommand('Animation.resolveAnimation', {animationId});
       const objectId = result.remoteObject.objectId;
       if (!objectId) return undefined;
-      const response = await driver.sendCommand('Runtime.getProperties', {
+      const response = await session.sendCommand('Runtime.getProperties', {
         objectId,
       });
       const nameProperty = response.result.find((property) => property.name === 'animationName');
@@ -112,7 +119,6 @@ class TraceElements extends Gatherer {
         tags: {gatherer: TraceElements.name},
         level: 'error',
       });
-      return undefined;
     }
   }
 
@@ -186,7 +192,7 @@ class TraceElements extends Gatherer {
 
   /**
    * Find the node ids of elements which are animated using the Animation trace events.
-   * @param {LH.Gatherer.PassContext} passContext
+   * @param {LH.Gatherer.FRTransitionalContext} passContext
    * @param {Array<LH.TraceEvent>} mainThreadEvents
    * @return {Promise<Array<TraceElementData>>}
    */
@@ -238,25 +244,25 @@ class TraceElements extends Gatherer {
   }
 
   /**
-   * @param {LH.Gatherer.PassContext} passContext
+   * @param {LH.Gatherer.FRTransitionalContext} passContext
    */
-  async beforePass(passContext) {
-    await passContext.driver.sendCommand('Animation.enable');
+  async startInstrumentation(passContext) {
+    await passContext.driver.defaultSession.sendCommand('Animation.enable');
   }
 
   /**
-   * @param {LH.Gatherer.PassContext} passContext
-   * @param {LH.Gatherer.LoadData} loadData
+   * @param {LH.Gatherer.FRTransitionalContext} passContext
+   * @param {LH.Trace|undefined} trace
    * @return {Promise<LH.Artifacts['TraceElements']>}
    */
-  async afterPass(passContext, loadData) {
-    const driver = passContext.driver;
-    if (!loadData.trace) {
+  async _getArtifact(passContext, trace) {
+    const session = passContext.driver.defaultSession;
+    if (!trace) {
       throw new Error('Trace is missing!');
     }
 
     const {largestContentfulPaintEvt, mainThreadEvents} =
-      TraceProcessor.computeTraceOfTab(loadData.trace);
+      TraceProcessor.computeTraceOfTab(trace);
 
     const lcpNodeId = TraceElements.getNodeIDFromTraceEvent(largestContentfulPaintEvt);
     const clsNodeData = TraceElements.getTopLayoutShiftElements(mainThreadEvents);
@@ -276,9 +282,9 @@ class TraceElements extends Gatherer {
         const backendNodeId = backendNodeData[i].nodeId;
         let response;
         try {
-          const objectId = await dom.resolveNodeIdToObjectId(driver.defaultSession, backendNodeId);
+          const objectId = await resolveNodeIdToObjectId(session, backendNodeId);
           if (!objectId) continue;
-          response = await driver.sendCommand('Runtime.callFunctionOn', {
+          response = await session.sendCommand('Runtime.callFunctionOn', {
             objectId,
             functionDeclaration: `function () {
               ${getNodeDetailsData.toString()};
@@ -308,9 +314,28 @@ class TraceElements extends Gatherer {
       }
     }
 
-    await driver.sendCommand('Animation.disable');
+    session.sendCommand('Animation.disable');
 
     return traceElements;
+  }
+
+  /**
+   * @param {LH.Gatherer.FRTransitionalContext<'Trace'>} passContext
+   * @return {Promise<LH.Artifacts.TraceElement[]>}
+   */
+  async getArtifact(passContext) {
+    return this._getArtifact(passContext, passContext.dependencies.Trace);
+  }
+
+  /**
+   * @param {LH.Gatherer.PassContext} passContext
+   * @param {LH.Gatherer.LoadData} loadData
+   * @return {Promise<LH.Artifacts.TraceElement[]>}
+   */
+  async afterPass(passContext, loadData) {
+    const context = {...passContext, dependencies: {}};
+    await this.stopInstrumentation(context);
+    return this._getArtifact(context, loadData.trace);
   }
 }
 
