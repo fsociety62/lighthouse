@@ -254,7 +254,6 @@ class TreemapViewer {
         potentialByteSavings += duplicatedBytes;
       }
 
-      // TODO: Show button but disable?
       let enabled = true;
       if (highlightNodePaths.length === 0) enabled = false;
       if (potentialByteSavings / root.resourceBytes < DUPLICATED_MODULES_IGNORE_ROOT_RATIO) {
