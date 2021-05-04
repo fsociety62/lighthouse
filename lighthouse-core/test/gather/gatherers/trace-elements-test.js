@@ -764,7 +764,6 @@ describe('FR compat', () => {
     const trace = ['1', '2'];
     await gatherer.afterPass({}, {trace});
     expect(gatherer._getArtifact).toHaveBeenCalledWith({dependencies: {}}, trace);
-    expect(gatherer.stopInstrumentation).toHaveBeenCalledWith({dependencies: {}});
   });
 
   it('uses dependency in legacy mode', async () => {
@@ -774,6 +773,5 @@ describe('FR compat', () => {
     };
     await gatherer.getArtifact(context);
     expect(gatherer._getArtifact).toHaveBeenCalledWith(context, trace);
-    expect(gatherer.stopInstrumentation).not.toHaveBeenCalled();
   });
 });
