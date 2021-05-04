@@ -206,7 +206,7 @@ describe('GatherRunner', function() {
     const requestedUrl = 'https://example.com';
     const driver = fakeDriver;
     const config = makeConfig({passes: []});
-    const options = {requestedUrl, driver, settings: config.settings};
+    const options = {requestedUrl, driver, settings: config.settings, computedCache: new Map()};
 
     const results = await GatherRunner.run(config.passes, options);
     expect(Number.isFinite(results.BenchmarkIndex)).toBeTruthy();
@@ -216,7 +216,7 @@ describe('GatherRunner', function() {
     const requestedUrl = 'https://example.com';
     const driver = fakeDriver;
     const config = makeConfig({passes: []});
-    const options = {requestedUrl, driver, settings: config.settings};
+    const options = {requestedUrl, driver, settings: config.settings, computedCache: new Map()};
 
     const results = await GatherRunner.run(config.passes, options);
     expect(results.HostUserAgent).toEqual(fakeDriver.protocolGetVersionResponse.userAgent);
@@ -227,7 +227,7 @@ describe('GatherRunner', function() {
     const requestedUrl = 'https://example.com';
     const driver = fakeDriver;
     const config = makeConfig({passes: [{passName: 'defaultPass'}]});
-    const options = {requestedUrl, driver, settings: config.settings};
+    const options = {requestedUrl, driver, settings: config.settings, computedCache: new Map()};
 
     const results = await GatherRunner.run(config.passes, options);
     expect(results.NetworkUserAgent).toContain('Mozilla');
@@ -239,7 +239,12 @@ describe('GatherRunner', function() {
     const gotoURL = jest.requireMock('../../gather/driver/navigation.js').gotoURL;
     gotoURL.mockResolvedValue({finalUrl, timedOut: false});
     const config = makeConfig({passes: [{passName: 'defaultPass'}]});
-    const options = {requestedUrl, driver: fakeDriver, settings: config.settings};
+    const options = {
+      requestedUrl,
+      driver: fakeDriver,
+      settings: config.settings,
+      computedCache: new Map(),
+    };
 
     return GatherRunner.run(config.passes, options).then(artifacts => {
       assert.deepStrictEqual(artifacts.URL, {requestedUrl, finalUrl},
@@ -266,7 +271,7 @@ describe('GatherRunner', function() {
           passes: [],
           settings: {},
         });
-        const options = {requestedUrl, driver, settings: config.settings};
+        const options = {requestedUrl, driver, settings: config.settings, computedCache: new Map()};
 
         const results = await GatherRunner.run(config.passes, options);
         expect(results.HostFormFactor).toBe(expectedValue);
@@ -476,6 +481,7 @@ describe('GatherRunner', function() {
       passConfig,
       settings,
       baseArtifacts: await GatherRunner.initializeBaseArtifacts({driver, settings, requestedUrl}),
+      computedCache: new Map(),
     };
 
     const storage = jest.requireMock('../../gather/driver/storage.js');
@@ -508,6 +514,7 @@ describe('GatherRunner', function() {
       driver,
       requestedUrl,
       settings: config.settings,
+      computedCache: new Map(),
     };
 
     const artifacts = await GatherRunner.run(config.passes, options);
@@ -546,6 +553,7 @@ describe('GatherRunner', function() {
       driver,
       requestedUrl,
       settings: config.settings,
+      computedCache: new Map(),
     };
 
     const artifacts = await GatherRunner.run(config.passes, options);
@@ -590,6 +598,7 @@ describe('GatherRunner', function() {
       driver,
       requestedUrl,
       settings: config.settings,
+      computedCache: new Map(),
     };
 
     const artifacts = await GatherRunner.run(config.passes, options);
@@ -748,7 +757,8 @@ describe('GatherRunner', function() {
       ],
     };
 
-    return GatherRunner.endRecording({url, driver, passConfig}).then(passData => {
+    const passContext = {url, driver, passConfig, computedCache: new Map()};
+    return GatherRunner.endRecording(passContext).then(passData => {
       assert.equal(calledTrace, true);
       assert.equal(passData.trace, fakeTraceData);
     });
@@ -773,7 +783,7 @@ describe('GatherRunner', function() {
     };
     const settings = {};
 
-    await GatherRunner.beginRecording({driver, passConfig, settings});
+    await GatherRunner.beginRecording({driver, passConfig, settings, computedCache: new Map()});
     assert.equal(calledDevtoolsLogCollect, true);
   });
 
@@ -797,7 +807,8 @@ describe('GatherRunner', function() {
       ],
     };
 
-    return GatherRunner.endRecording({url, driver, passConfig}).then(passData => {
+    const passContext = {url, driver, passConfig, computedCache: new Map()};
+    return GatherRunner.endRecording(passContext).then(passData => {
       assert.equal(calledDevtoolsLogCollect, true);
       assert.strictEqual(passData.devtoolsLog[0], fakeDevtoolsMessage);
     });
@@ -827,7 +838,8 @@ describe('GatherRunner', function() {
     const gathererResults = {
       TestGatherer: [],
     };
-    await GatherRunner.afterPass({url, driver, passConfig}, {}, gathererResults);
+    const passContext = {url, driver, passConfig, computedCache: new Map()};
+    await GatherRunner.afterPass(passContext, {}, gathererResults);
     // One time for the afterPass of ScrollMcScrolly, two times for the resets of the two gatherers.
     expect(scrollToSpy.mock.calls).toEqual([
       [{x: 1000, y: 1000}],
@@ -859,6 +871,7 @@ describe('GatherRunner', function() {
       driver: fakeDriver,
       requestedUrl: 'https://example.com',
       settings: config.settings,
+      computedCache: new Map(),
     }).then(_ => {
       assert.ok(t1.called);
       assert.ok(t2.called);
@@ -881,6 +894,7 @@ describe('GatherRunner', function() {
       driver: fakeDriver,
       requestedUrl: 'https://example.com',
       settings: config.settings,
+      computedCache: new Map(),
     };
 
     return GatherRunner.run(config.passes, options)
@@ -908,7 +922,7 @@ describe('GatherRunner', function() {
         gatherers: [{instance: new TestGatherer()}],
       }],
     });
-    const options = {driver, requestedUrl, settings: config.settings};
+    const options = {driver, requestedUrl, settings: config.settings, computedCache: new Map()};
     const artifacts = await GatherRunner.run(config.passes, options);
 
     expect(artifacts.PageLoadError).toMatchObject({code: 'NO_DOCUMENT_REQUEST'});
@@ -961,7 +975,7 @@ describe('GatherRunner', function() {
           throw new LHError(LHError.errors.NO_FCP);
         }
       });
-    const options = {driver, requestedUrl, settings: config.settings};
+    const options = {driver, requestedUrl, settings: config.settings, computedCache: new Map()};
     const artifacts = await GatherRunner.run(config.passes, options);
 
     // t1.pass() and t2.pass() called; t3.pass(), after the error, was not.
@@ -1454,6 +1468,7 @@ describe('GatherRunner', function() {
         driver: fakeDriver,
         requestedUrl: 'https://example.com',
         settings: config.settings,
+        computedCache: new Map(),
       });
 
       // Ensure artifacts returned and not errors.
@@ -1510,6 +1525,7 @@ describe('GatherRunner', function() {
         driver: fakeDriver,
         requestedUrl: 'https://example.com',
         settings: config.settings,
+        computedCache: new Map(),
       }).then(artifacts => {
         gathererNames.forEach(gathererName => {
           assert.strictEqual(artifacts[gathererName], gathererName);
@@ -1588,6 +1604,7 @@ describe('GatherRunner', function() {
         driver: fakeDriver,
         requestedUrl: 'https://example.com',
         settings: config.settings,
+        computedCache: new Map(),
       });
       assert.deepStrictEqual(artifacts.LighthouseRunWarnings, runWarnings);
     });
@@ -1643,6 +1660,7 @@ describe('GatherRunner', function() {
         driver: fakeDriver,
         requestedUrl: 'https://example.com',
         settings: config.settings,
+        computedCache: new Map(),
       }).then(artifacts => {
         gathererNames.forEach(gathererName => {
           const errorArtifact = artifacts[gathererName];
@@ -1667,6 +1685,7 @@ describe('GatherRunner', function() {
         driver: fakeDriver,
         requestedUrl: 'https://example.com',
         settings: config.settings,
+        computedCache: new Map(),
       }).then(_ => assert.ok(false), _ => assert.ok(true));
     });
 
@@ -1695,6 +1714,7 @@ describe('GatherRunner', function() {
         driver: unresolvedDriver,
         requestedUrl,
         settings: config.settings,
+        computedCache: new Map(),
       }).then(artifacts => {
         assert.equal(artifacts.LighthouseRunWarnings.length, 1);
         expect(artifacts.LighthouseRunWarnings[0])
@@ -1723,6 +1743,7 @@ describe('GatherRunner', function() {
         driver: timedoutDriver,
         requestedUrl,
         settings: config.settings,
+        computedCache: new Map(),
       }).then(artifacts => {
         assert.equal(artifacts.LighthouseRunWarnings.length, 1);
         expect(artifacts.LighthouseRunWarnings[0])
@@ -1755,6 +1776,7 @@ describe('GatherRunner', function() {
         driver: unresolvedDriver,
         requestedUrl,
         settings: config.settings,
+        computedCache: new Map(),
       })
         .then(_ => {
           assert.ok(true);

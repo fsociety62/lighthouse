@@ -27,7 +27,6 @@ declare global {
       | 'ImageElements'
       | 'InspectorIssues'
       | 'JsUsage'
-      | 'LinkElements'
       | 'MainDocumentContent'
       | 'Manifest'
       | 'MixedContent'
