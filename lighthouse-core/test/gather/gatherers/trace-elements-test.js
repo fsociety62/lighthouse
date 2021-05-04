@@ -537,7 +537,7 @@ describe('Trace Elements gatherer - Animated Elements', () => {
     trace.traceEvents.push(makeLCPTraceEvent(6));
 
     const gatherer = new TraceElementsGatherer();
-    const result = await gatherer.afterPass({driver}, {trace});
+    const result = await gatherer._getArtifact({driver}, trace);
 
     expect(result).toEqual([
       {
@@ -640,7 +640,7 @@ describe('Trace Elements gatherer - Animated Elements', () => {
     const driver = new Driver(connectionStub);
     const gatherer = new TraceElementsGatherer();
 
-    const result = await gatherer.afterPass({driver}, {trace: animationTrace});
+    const result = await gatherer._getArtifact({driver}, animationTrace);
 
     expect(result).toEqual([
       {
@@ -732,7 +732,7 @@ describe('Trace Elements gatherer - Animated Elements', () => {
     trace.traceEvents.push(makeLCPTraceEvent(7));
 
     const gatherer = new TraceElementsGatherer();
-    const result = await gatherer.afterPass({driver}, {trace});
+    const result = await gatherer._getArtifact({driver}, trace);
 
     expect(result).toEqual([
       {
