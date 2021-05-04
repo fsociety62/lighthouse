@@ -89,13 +89,13 @@ class LinkElements extends FRGatherer {
   }
 
   /**
-   * @param {LH.Gatherer.FRTransitionalContext} passContext
+   * @param {LH.Gatherer.FRTransitionalContext} context
    * @return {Promise<LH.Artifacts['LinkElements']>}
    */
-  static getLinkElementsInDOM(passContext) {
+  static getLinkElementsInDOM(context) {
     // We'll use evaluateAsync because the `node.getAttribute` method doesn't actually normalize
     // the values like access from JavaScript does.
-    return passContext.driver.executionContext.evaluate(getLinkElementsInDOM, {
+    return context.driver.executionContext.evaluate(getLinkElementsInDOM, {
       args: [],
       useIsolation: true,
       deps: [
@@ -106,12 +106,12 @@ class LinkElements extends FRGatherer {
   }
 
   /**
-   * @param {LH.Gatherer.FRTransitionalContext} passContext
+   * @param {LH.Gatherer.FRTransitionalContext} context
    * @param {LH.Artifacts.NetworkRequest[]} networkRecords
    * @return {Promise<LH.Artifacts['LinkElements']>}
    */
-  static async getLinkElementsInHeaders(passContext, networkRecords) {
-    const finalUrl = passContext.url;
+  static async getLinkElementsInHeaders(context, networkRecords) {
+    const finalUrl = context.url;
     const mainDocument = NetworkAnalyzer.findMainDocument(networkRecords, finalUrl);
 
     /** @type {LH.Artifacts['LinkElements']} */
@@ -138,13 +138,13 @@ class LinkElements extends FRGatherer {
   }
 
   /**
-   * @param {LH.Gatherer.FRTransitionalContext} passContext
+   * @param {LH.Gatherer.FRTransitionalContext} context
    * @param {LH.Artifacts.NetworkRequest[]} networkRecords
    * @return {Promise<LH.Artifacts['LinkElements']>}
    */
-  async _getArtifact(passContext, networkRecords) {
-    const fromDOM = await LinkElements.getLinkElementsInDOM(passContext);
-    const fromHeaders = await LinkElements.getLinkElementsInHeaders(passContext, networkRecords);
+  async _getArtifact(context, networkRecords) {
+    const fromDOM = await LinkElements.getLinkElementsInDOM(context);
+    const fromHeaders = await LinkElements.getLinkElementsInHeaders(context, networkRecords);
     const linkElements = fromDOM.concat(fromHeaders);
 
     for (const link of linkElements) {
@@ -156,21 +156,21 @@ class LinkElements extends FRGatherer {
   }
 
   /**
-   * @param {LH.Gatherer.PassContext} passContext
+   * @param {LH.Gatherer.PassContext} context
    * @param {LH.Gatherer.LoadData} loadData
    * @return {Promise<LH.Artifacts['LinkElements']>}
    */
-  async afterPass(passContext, loadData) {
-    return await this._getArtifact({...passContext, dependencies: {}}, loadData.networkRecords);
+  async afterPass(context, loadData) {
+    return await this._getArtifact({...context, dependencies: {}}, loadData.networkRecords);
   }
 
   /**
-   * @param {LH.Gatherer.FRTransitionalContext<'DevtoolsLog'>} passContext
+   * @param {LH.Gatherer.FRTransitionalContext<'DevtoolsLog'>} context
    * @return {Promise<LH.Artifacts['LinkElements']>}
    */
-  async getArtifact(passContext) {
-    const records = await NetworkRecords.request(passContext.dependencies.DevtoolsLog, passContext);
-    return await this._getArtifact(passContext, records);
+  async getArtifact(context) {
+    const records = await NetworkRecords.request(context.dependencies.DevtoolsLog, context);
+    return await this._getArtifact(context, records);
   }
 }
 
