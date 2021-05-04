@@ -84,7 +84,11 @@ function getLinkElementsInDOM() {
 class LinkElements extends FRGatherer {
   constructor() {
     super();
-    /** @type {LH.Gatherer.GathererMeta<'DevtoolsLog'>} */
+    /**
+     * This needs to be in the constructor.
+     * https://github.com/GoogleChrome/lighthouse/issues/12134
+     * @type {LH.Gatherer.GathererMeta<'DevtoolsLog'>}
+     */
     this.meta = {
       supportedModes: ['timespan', 'navigation'],
       dependencies: {DevtoolsLog: DevtoolsLog.symbol},
@@ -164,7 +168,7 @@ class LinkElements extends FRGatherer {
    * @return {Promise<LH.Artifacts['LinkElements']>}
    */
   async afterPass(context, loadData) {
-    return await this._getArtifact({...context, dependencies: {}}, loadData.networkRecords);
+    return this._getArtifact({...context, dependencies: {}}, loadData.networkRecords);
   }
 
   /**
@@ -173,7 +177,7 @@ class LinkElements extends FRGatherer {
    */
   async getArtifact(context) {
     const records = await NetworkRecords.request(context.dependencies.DevtoolsLog, context);
-    return await this._getArtifact(context, records);
+    return this._getArtifact(context, records);
   }
 }
 
