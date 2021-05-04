@@ -108,9 +108,9 @@ class LinkElements extends FRGatherer {
   /**
    * @param {LH.Gatherer.FRTransitionalContext} context
    * @param {LH.Artifacts.NetworkRequest[]} networkRecords
-   * @return {Promise<LH.Artifacts['LinkElements']>}
+   * @return {LH.Artifacts['LinkElements']}
    */
-  static async getLinkElementsInHeaders(context, networkRecords) {
+  static getLinkElementsInHeaders(context, networkRecords) {
     const finalUrl = context.url;
     const mainDocument = NetworkAnalyzer.findMainDocument(networkRecords, finalUrl);
 
@@ -144,7 +144,7 @@ class LinkElements extends FRGatherer {
    */
   async _getArtifact(context, networkRecords) {
     const fromDOM = await LinkElements.getLinkElementsInDOM(context);
-    const fromHeaders = await LinkElements.getLinkElementsInHeaders(context, networkRecords);
+    const fromHeaders = LinkElements.getLinkElementsInHeaders(context, networkRecords);
     const linkElements = fromDOM.concat(fromHeaders);
 
     for (const link of linkElements) {
