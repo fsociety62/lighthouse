@@ -208,6 +208,7 @@ class TreemapViewer {
         label: 'Unused Bytes',
         subLabel: TreemapUtil.formatBytes(root.unusedBytes),
         highlightNodePaths,
+        enabled: true,
       };
     }
 
@@ -239,7 +240,6 @@ class TreemapViewer {
         const bytes = [];
         for (const {node} of nodesWithSameModuleName) {
           bytes.push(node.resourceBytes);
-          console.log(node.duplicatedNormalizedModuleName);
         }
 
         // Sum all but the largest copy.
@@ -255,16 +255,18 @@ class TreemapViewer {
       }
 
       // TODO: Show button but disable?
-      if (highlightNodePaths.length === 0) return;
+      let enabled = true;
+      if (highlightNodePaths.length === 0) enabled = false;
       if (potentialByteSavings / root.resourceBytes < DUPLICATED_MODULES_IGNORE_ROOT_RATIO) {
-        return;
+        enabled = false;
       }
 
       return {
         id: 'duplicate-modules',
         label: 'Duplicate Modules',
-        subLabel: TreemapUtil.formatBytes(potentialByteSavings),
+        subLabel: enabled ? TreemapUtil.formatBytes(potentialByteSavings) : 'N/A',
         highlightNodePaths,
+        enabled,
       };
     };
 
@@ -275,6 +277,7 @@ class TreemapViewer {
       id: 'all',
       label: `All`,
       subLabel: TreemapUtil.formatBytes(this.currentTreemapRoot.resourceBytes),
+      enabled: true,
     });
 
     const unusedBytesViewMode = createUnusedBytesViewMode(this.currentTreemapRoot);
@@ -316,7 +319,11 @@ class TreemapViewer {
     }
 
     this.viewModes = this.createViewModes();
-    if (!this.currentViewMode) this.currentViewMode = this.viewModes[0];
+    const currentViewModeIsDisabled = this.currentViewMode &&
+      this.viewModes.find(v => v.id === this.currentViewMode.id && !v.enabled);
+    if (!this.currentViewMode || currentViewModeIsDisabled) {
+      this.currentViewMode = this.viewModes[0];
+    }
   }
 
   /**
@@ -452,6 +459,7 @@ function renderViewModeButtons(viewModes) {
    */
   function render(viewMode) {
     const viewModeEl = TreemapUtil.createChildOf(viewModesEl, 'div', 'view-mode');
+    if (!viewMode.enabled) viewModeEl.classList.add('view-mode--disabled');
     viewModeEl.id = `view-mode--${viewMode.id}`;
 
     const labelEl = TreemapUtil.createChildOf(viewModeEl, 'label');
@@ -462,6 +470,7 @@ function renderViewModeButtons(viewModes) {
     const inputEl = TreemapUtil.createChildOf(labelEl, 'input', 'view-mode__button', {
       type: 'radio',
       name: 'view-mode',
+      disabled: viewMode.enabled ? undefined : '',
     });
 
     inputEl.addEventListener('click', () => {

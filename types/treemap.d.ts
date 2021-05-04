@@ -23,6 +23,7 @@ declare global {
       subLabel: string;
       partitionBy?: 'resourceBytes' | 'unusedBytes';
       highlightNodePaths?: NodePath[];
+      enabled: boolean;
     }
 
     interface Node {
