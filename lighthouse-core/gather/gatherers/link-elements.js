@@ -82,10 +82,13 @@ function getLinkElementsInDOM() {
 /* c8 ignore stop */
 
 class LinkElements extends FRGatherer {
-  /** @type {LH.Gatherer.GathererMeta<'DevtoolsLog'>} */
-  meta = {
-    supportedModes: ['timespan', 'navigation'],
-    dependencies: {DevtoolsLog: DevtoolsLog.symbol},
+  constructor() {
+    super();
+    /** @type {LH.Gatherer.GathererMeta<'DevtoolsLog'>} */
+    this.meta = {
+      supportedModes: ['timespan', 'navigation'],
+      dependencies: {DevtoolsLog: DevtoolsLog.symbol},
+    };
   }
 
   /**
