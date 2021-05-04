@@ -414,12 +414,12 @@ class TreemapViewer {
         // eslint-disable-next-line max-len
         {title: Util.i18n.strings.treemapName, field: 'name', widthGrow: 5, tooltip: makeNameTooltip},
         // eslint-disable-next-line max-len
-        {title: Util.i18n.strings.treemapSize, field: 'resourceBytes', headerSortStartingDir: 'desc', tooltip: makeBytesTooltip('resourceBytes'), formatter: cell => {
+        {title: Util.i18n.strings.treemapResourceBytes, field: 'resourceBytes', headerSortStartingDir: 'desc', tooltip: makeBytesTooltip('resourceBytes'), formatter: cell => {
           const value = cell.getValue();
           return TreemapUtil.formatBytes(value);
         }},
         // eslint-disable-next-line max-len
-        {title: Util.i18n.strings.treemapUnused, field: 'unusedBytes', widthGrow: 1, sorterParams: {alignEmptyValues: 'bottom'}, headerSortStartingDir: 'desc', tooltip: makeBytesTooltip('unusedBytes'), formatter: cell => {
+        {title: Util.i18n.strings.treemapUnusedBytes, field: 'unusedBytes', widthGrow: 1, sorterParams: {alignEmptyValues: 'bottom'}, headerSortStartingDir: 'desc', tooltip: makeBytesTooltip('unusedBytes'), formatter: cell => {
           const value = cell.getValue();
           if (value === undefined) return '';
           return TreemapUtil.formatBytes(value);

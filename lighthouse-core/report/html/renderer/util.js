@@ -620,20 +620,20 @@ Util.UIStrings = {
 
   /** Label for a button that alternates between showing or hiding a table. */
   treemapToggleTable: 'Toggle Table',
+  /** Text for an option in a dropdown menu, when selected the current view of the app is set to all scripts. */
   treemapAllScripts: 'All Scripts',
+  /** Label for a column where the values are URLs, JS module names, or arbitrary identifiers. For simplicity, just 'name' is used. */
   treemapName: 'Name',
+  /** Label for a value associated with how many bytes a URL/file is, on-disk. */
   treemapResourceBytes: 'Resource Bytes',
+  /** Label for a value associated with how many bytes a URL/file is, over-network. */
   treemapUnusedBytes: 'Unused Bytes',
-  treemapSize: 'Size',
-  treemapUnused: 'Unused',
+  /** Label for a column where the values represent how much of a file is used bytes vs unused bytes (coverage). */
   treemapCoverage: 'Coverage',
-  treemapAll: 'Coverage',
+  /** Label for a button that shows everything. */
+  treemapAll: 'All',
+  /** Label for a button that highlights information about duplicate modules (aka: files, javascript resources). */
   treemapDuplicateModules: 'Duplicate Modules',
-  /**
-   * @description Message shown in tooltip when user hovers over an element representing what percentage of bytes are unused in a specific file.
-   * @example {'42'} percent
-   */
-  // treemapBytesUnused: '{percent}% bytes unused',
 };
 
 if (typeof module !== 'undefined' && module.exports) {
