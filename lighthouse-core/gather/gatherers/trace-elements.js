@@ -96,12 +96,12 @@ class TraceElements extends FRGatherer {
   }
 
   /**
-   * @param {LH.Gatherer.FRTransitionalContext} passContext
+   * @param {LH.Gatherer.FRTransitionalContext} context
    * @param {string} animationId
    * @return {Promise<string | undefined>}
    */
-  static async resolveAnimationName(passContext, animationId) {
-    const session = passContext.driver.defaultSession;
+  static async resolveAnimationName(context, animationId) {
+    const session = context.driver.defaultSession;
     try {
       const result = await session.sendCommand('Animation.resolveAnimation', {animationId});
       const objectId = result.remoteObject.objectId;
@@ -192,11 +192,11 @@ class TraceElements extends FRGatherer {
 
   /**
    * Find the node ids of elements which are animated using the Animation trace events.
-   * @param {LH.Gatherer.FRTransitionalContext} passContext
+   * @param {LH.Gatherer.FRTransitionalContext} context
    * @param {Array<LH.TraceEvent>} mainThreadEvents
    * @return {Promise<Array<TraceElementData>>}
    */
-  static async getAnimatedElements(passContext, mainThreadEvents) {
+  static async getAnimatedElements(context, mainThreadEvents) {
     /** @type {Map<string, {begin: LH.TraceEvent | undefined, status: LH.TraceEvent | undefined}>} */
     const animationPairs = new Map();
     for (const event of mainThreadEvents) {
@@ -235,7 +235,7 @@ class TraceElements extends FRGatherer {
     for (const [nodeId, animationIds] of elementAnimations) {
       const animations = [];
       for (const {animationId, failureReasonsMask, unsupportedProperties} of animationIds) {
-        const animationName = await this.resolveAnimationName(passContext, animationId);
+        const animationName = await this.resolveAnimationName(context, animationId);
         animations.push({name: animationName, failureReasonsMask, unsupportedProperties});
       }
       animatedElementData.push({nodeId, animations});
@@ -244,19 +244,19 @@ class TraceElements extends FRGatherer {
   }
 
   /**
-   * @param {LH.Gatherer.FRTransitionalContext} passContext
+   * @param {LH.Gatherer.FRTransitionalContext} context
    */
-  async startInstrumentation(passContext) {
-    await passContext.driver.defaultSession.sendCommand('Animation.enable');
+  async startInstrumentation(context) {
+    await context.driver.defaultSession.sendCommand('Animation.enable');
   }
 
   /**
-   * @param {LH.Gatherer.FRTransitionalContext} passContext
+   * @param {LH.Gatherer.FRTransitionalContext} context
    * @param {LH.Trace|undefined} trace
    * @return {Promise<LH.Artifacts['TraceElements']>}
    */
-  async _getArtifact(passContext, trace) {
-    const session = passContext.driver.defaultSession;
+  async _getArtifact(context, trace) {
+    const session = context.driver.defaultSession;
     if (!trace) {
       throw new Error('Trace is missing!');
     }
@@ -267,7 +267,7 @@ class TraceElements extends FRGatherer {
     const lcpNodeId = TraceElements.getNodeIDFromTraceEvent(largestContentfulPaintEvt);
     const clsNodeData = TraceElements.getTopLayoutShiftElements(mainThreadEvents);
     const animatedElementData =
-      await TraceElements.getAnimatedElements(passContext, mainThreadEvents);
+      await TraceElements.getAnimatedElements(context, mainThreadEvents);
 
     /** @type {Map<string, TraceElementData[]>} */
     const backendNodeDataMap = new Map([
@@ -320,11 +320,11 @@ class TraceElements extends FRGatherer {
   }
 
   /**
-   * @param {LH.Gatherer.FRTransitionalContext<'Trace'>} passContext
+   * @param {LH.Gatherer.FRTransitionalContext<'Trace'>} context
    * @return {Promise<LH.Artifacts.TraceElement[]>}
    */
-  async getArtifact(passContext) {
-    return this._getArtifact(passContext, passContext.dependencies.Trace);
+  async getArtifact(context) {
+    return this._getArtifact(context, context.dependencies.Trace);
   }
 
   /**
@@ -334,7 +334,6 @@ class TraceElements extends FRGatherer {
    */
   async afterPass(passContext, loadData) {
     const context = {...passContext, dependencies: {}};
-    await this.stopInstrumentation(context);
     return this._getArtifact(context, loadData.trace);
   }
 }
